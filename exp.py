@@ -16,6 +16,8 @@ for ax, image, label in zip(axes, digits.images, digits.target):
     ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
     ax.set_title("Training: %i" % label)
 
+
+# Data preprocessing
 # flatten the images
 n_samples = len(digits.images)
 data = digits.images.reshape((n_samples, -1))

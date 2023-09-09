@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split
 from sklearn import svm, datasets, metrics
+import itertools
 
 
 def read_digits():
@@ -37,33 +38,30 @@ def train_test_dev_split(X, y, test_size, dev_size):
     X_train, X_dev, y_train, y_dev = split_data(X_train_dev, Y_train_Dev, dev_size/(1-test_size), random_state=1)
     return X_train, X_test, y_train, y_test, X_dev, y_dev
 
-# Question 2:
+
+def tune_hparams(X_train, y_train, X_dev, y_dev, list_of_all_param_combinations):
+    best_hparams = None
+    best_model = None
+    best_accuracy = 0.0
+    
+    for param_combination in list_of_all_param_combinations:
+        # Train a model with the current hyperparameters
+        model = train_model(X_train, y_train, param_combination)  
+        train_acc = predict_and_eval(model, X_train, y_train)  
+        
+        # Evaluate the model on the development data
+        dev_acc = predict_and_eval(model, X_dev, y_dev)  
+        
+        # Check if this model's accuracy is better than the current best
+        if dev_acc > best_accuracy:
+            best_hparams = param_combination
+            best_model = model
+            best_accuracy = dev_acc
+    
+    return train_acc, best_hparams, best_model, best_accuracy
+
+
 def predict_and_eval(model, X_test, y_test):
     predicted = model.predict(X_test)
-    print(
-    f"Classification report for classifier {model}:\n"
-    f"{metrics.classification_report(y_test, predicted)}\n"
-    )
-
-
-    disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
-    disp.figure_.suptitle("Confusion Matrix")
-    print(f"Confusion matrix:\n{disp.confusion_matrix}")
-
-
-    # The ground truth and predicted lists
-    y_true = []
-    y_pred = []
-    cm = disp.confusion_matrix
-
-    # For each cell in the confusion matrix, add the corresponding ground truths
-    # and predictions to the lists
-    for gt in range(len(cm)):
-        for pred in range(len(cm)):
-            y_true += [gt] * cm[gt][pred]
-            y_pred += [pred] * cm[gt][pred]
-
-    print(
-        "Classification report rebuilt from confusion matrix:\n"
-        f"{metrics.classification_report(y_true, y_pred)}\n"
-    )
+    accuracy = metrics.accuracy_score(y_test, predicted)
+    return accuracy

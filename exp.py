@@ -2,25 +2,44 @@
 # License: BSD 3 clause
 
 # Import datasets, classifiers and performance metrics
+import itertools
 from sklearn import metrics, svm
-from utils import preprocess_data, split_data, train_model, read_digits, predict_and_eval, train_test_dev_split
+from utils import preprocess_data, split_data, train_model, read_digits, predict_and_eval, train_test_dev_split, tune_hparams
 
 # 1. Get the dataset
 X, y = read_digits()
 
+dev_size = [0.1, 0.2, 0.3] 
+test_size = [0.1, 0.2, 0.3] 
+dev_test_combinations = [{'test_size': test, 'dev_size': dev,} for test, dev in itertools.product(dev_size, test_size)]
+
 # 3. Data splitting -- to create train and test sets
-# X_train, X_test, y_train, y_test = split_data(X,y, test_size=0.3)
-X_train, X_test, y_train, y_test, X_dev, y_dev = train_test_dev_split(X, y, test_size=0.3, dev_size=0.2)
+for dict_size in dev_test_combinations:
+    test_size = dict_size['test_size']
+    dev_size = dict_size['dev_size']
+    train_size = 1 - (dev_size+test_size)
 
-# 4. Data preprocessing
-X_train = preprocess_data(X_train)
-X_test = preprocess_data(X_test)
+    X_train, X_test, y_train, y_test, X_dev, y_dev = train_test_dev_split(X, y, test_size=test_size, dev_size=dev_size)
 
-# 5. Model training
-model = train_model(X_train, y_train, {'gamma': 0.001}, model_type="svm")
+    # 4. Data preprocessing
+    X_train = preprocess_data(X_train)
+    X_test = preprocess_data(X_test)
+    X_dev = preprocess_data(X_dev)
 
-# 6. Getting model predictions on test set
-# Predict the value of the digit on the test subset
-# 7. Qualitative sanity check of the predictions
-# 8. Evaluation
-predict_and_eval(model, X_test, y_test)
+    gamma_range = [0.001, 0.01, 0.1, 1.0, 10]
+    C_range = [0.1, 1.0, 2, 5, 10]
+
+
+    # Generate a list of dictionaries representing all combinations
+    param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_range, C_range)]
+
+    # Hyperparameter tuning 
+    train_acc, best_hparams, best_model, best_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations)
+
+
+    # Model training
+    model = train_model(X_train, y_train, best_hparams, model_type="svm")
+
+    # Accuracy Evaluation
+    test_acc = predict_and_eval(model, X_test, y_test)
+    print(f'test_size={test_size}, dev_size={dev_size}, train_size={train_size}, train_acc:{train_acc:.2f} dev_acc:{best_accuracy:.2f} test_acc: {test_acc:.2f}')

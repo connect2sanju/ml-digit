@@ -1,76 +1,48 @@
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD 3 clause
 
-# Standard scientific Python imports
-import matplotlib.pyplot as plt
-
 # Import datasets, classifiers and performance metrics
-from sklearn import datasets, metrics, svm
-from sklearn.model_selection import train_test_split
+import itertools
+from sklearn import metrics, svm
+from utils import preprocess_data, split_data, train_model, read_digits, predict_and_eval, train_test_dev_split, tune_hparams
+
+# 1. Get the dataset
+X, y = read_digits()
+
+dev_size = [0.1, 0.2, 0.3] 
+test_size = [0.1, 0.2, 0.3] 
+dev_test_combinations = [{'test_size': test, 'dev_size': dev,} for test, dev in itertools.product(dev_size, test_size)]
+
+# 3. Data splitting -- to create train and test sets
+for dict_size in dev_test_combinations:
+    test_size = dict_size['test_size']
+    dev_size = dict_size['dev_size']
+    train_size = 1 - (dev_size+test_size)
+
+    X_train, X_test, y_train, y_test, X_dev, y_dev = train_test_dev_split(X, y, test_size=test_size, dev_size=dev_size)
+
+    # 4. Data preprocessing
+    X_train = preprocess_data(X_train)
+    X_test = preprocess_data(X_test)
+    X_dev = preprocess_data(X_dev)
+
+    gamma_range = [0.001, 0.01, 0.1, 1.0, 10]
+    C_range = [0.1, 1.0, 2, 5, 10]
 
 
-# Data preprocessing, flatten the images
-def preprocess_data(data):
-    n_samples = len(data)
-    data = digits.images.reshape((n_samples, -1))
-    return data
+    # Generate a list of dictionaries representing all combinations
+    param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_range, C_range)]
 
-# Split data into train test & validation subsets
-def split_train_dev_test(X, y, test_size, dev_size):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=1)
-
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=dev_size, random_state=1) 
-
-    return X_train,y_train, X_val, y_val, X_test, y_test
-
-# Train the model of choice with model parameter 
-def train_model(x,y,model_param, model_type='svm'):
-    model = svm.SVC(gamma=0.001)
-    # Train the model
-    model.fit(x, y)
-
-    return model
+    # Hyperparameter tuning 
+    train_acc, best_hparams, best_model, best_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations)
 
 
-def predict_and_eval(model, X_test, y_test):
-# Predict the value of the digit on the test subset
-    predicted = model.predict(X_test)
+    # Model training
+    model = train_model(X_train, y_train, best_hparams, model_type="svm")
 
-    print(
-        f"Classification report for classifier {model}:\n"
-        f"{metrics.classification_report(y_test, predicted)}\n"
-    )
+    # Accuracy Evaluation
+    test_acc = predict_and_eval(model, X_test, y_test)
 
-    disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
-    disp.figure_.suptitle("Confusion Matrix")
-    print(f"Confusion matrix:\n{disp.confusion_matrix}")
-
-
-    # The ground truth and predicted lists
-    y_true = []
-    y_pred = []
-    cm = disp.confusion_matrix
-
-    # For each cell in the confusion matrix, add the corresponding ground truths
-    # and predictions to the lists
-    for gt in range(len(cm)):
-        for pred in range(len(cm)):
-            y_true += [gt] * cm[gt][pred]
-            y_pred += [pred] * cm[gt][pred]
-
-    print(
-        "Classification report rebuilt from confusion matrix:\n"
-        f"{metrics.classification_report(y_true, y_pred)}\n"
-    )
-
-    return predicted 
-
-
-digits = datasets.load_digits()
-
-data = preprocess_data(digits.images)
-
-X_train,y_train, X_val, y_val, X_test, y_test = split_train_dev_test(data, digits.target, 0.2, 0.2)
-
-model = train_model(X_train, y_train, {'gamma':0.001}, model_type='svm')
-predicted = predict_and_eval(model, X_test, y_test)
+    # Print all combinations 
+    print(f'test_size={test_size}, dev_size={dev_size}, train_size={train_size}, train_acc:{train_acc:.2f} dev_acc:{best_accuracy:.2f} test_acc: {test_acc:.2f}')
+    print(f' Best params:{best_hparams}')

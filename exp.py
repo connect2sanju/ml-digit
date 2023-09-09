@@ -42,4 +42,7 @@ for dict_size in dev_test_combinations:
 
     # Accuracy Evaluation
     test_acc = predict_and_eval(model, X_test, y_test)
+
+    # Print all combinations 
     print(f'test_size={test_size}, dev_size={dev_size}, train_size={train_size}, train_acc:{train_acc:.2f} dev_acc:{best_accuracy:.2f} test_acc: {test_acc:.2f}')
+    print(f' Best params:{best_hparams}')

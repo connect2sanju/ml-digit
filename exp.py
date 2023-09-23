@@ -11,7 +11,7 @@ X, y = read_digits()
 
 dev_size = [0.1, 0.2, 0.3] 
 test_size = [0.1, 0.2, 0.3] 
-dev_test_combinations = [{'test_size': test, 'dev_size': dev,} for test, dev in itertools.product(dev_size, test_size)]
+dev_test_combinations = [{'test_size': test, 'dev_size': dev} for test, dev in itertools.product(dev_size, test_size)]
 
 # 3. Data splitting -- to create train and test sets
 for dict_size in dev_test_combinations:
@@ -44,5 +44,10 @@ for dict_size in dev_test_combinations:
     test_acc = predict_and_eval(model, X_test, y_test)
 
     # Print all combinations 
-    print(f'test_size={test_size}, dev_size={dev_size}, train_size={train_size}, train_acc:{train_acc:.2f} dev_acc:{best_accuracy:.2f} test_acc: {test_acc:.2f}')
-    print(f' Best params:{best_hparams}')
+    # print(f'test_size={test_size}, dev_size={dev_size}, train_size={train_size}, train_acc:{train_acc:.2f} dev_acc:{best_accuracy:.2f} test_acc: {test_acc:.2f}')
+    # print(f' Best params:{best_hparams}')
+
+print('The number of total samples in the train dataset:', len(X)*train_size)
+print('The number of total samples in the test dataset:', len(X)*test_size)
+print('The number of total samples in the dev dataset:', len(X)*dev_size)
+

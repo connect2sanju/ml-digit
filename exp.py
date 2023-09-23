@@ -29,9 +29,10 @@ for dict_size in dev_test_combinations:
     gamma_range = [0.001, 0.01, 0.1, 1.0, 10]
     C_range = [0.1, 1.0, 2, 5, 10]
 
-
+    hparam_combos = itertools.product(gamma_range, C_range)
+    
     # Generate a list of dictionaries representing all combinations
-    param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_range, C_range)]
+    param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in hparam_combos]
 
     # Hyperparameter tuning 
     train_acc, best_hparams, best_model, best_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations)

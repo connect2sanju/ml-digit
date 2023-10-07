@@ -1,53 +1,58 @@
-# Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
-# License: BSD 3 clause
-
-# Import datasets, classifiers and performance metrics
 import itertools
 from sklearn import metrics, svm
 from utils import preprocess_data, split_data, train_model, read_digits, predict_and_eval, train_test_dev_split, tune_hparams
+from skimage.transform import resize
+import numpy as np
 
-# 1. Get the dataset
+# Load the digit dataset
 X, y = read_digits()
 
-dev_size = [0.1, 0.2, 0.3] 
-test_size = [0.1, 0.2, 0.3] 
-dev_test_combinations = [{'test_size': test, 'dev_size': dev} for test, dev in itertools.product(dev_size, test_size)]
+# Define different image sizes
+image_sizes = [(4, 4), (6, 6), (8, 8)]
 
-# 3. Data splitting -- to create train and test sets
-for dict_size in dev_test_combinations:
-    test_size = dict_size['test_size']
-    dev_size = dict_size['dev_size']
-    train_size = 1 - (dev_size+test_size)
+# Define data split sizes
+data_split_sizes = {
+    'train_size': 0.7,
+    'dev_size': 0.1,
+    'test_size': 0.2
+}
 
-    X_train, X_test, y_train, y_test, X_dev, y_dev = train_test_dev_split(X, y, test_size=test_size, dev_size=dev_size)
+# Loop through image sizes
+for size in image_sizes:
+    for split_name, split_size in data_split_sizes.items():
+        # Resize the images to the specified size
+        X_resized = [resize(image, size) for image in X]
 
-    # 4. Data preprocessing
-    X_train = preprocess_data(X_train)
-    X_test = preprocess_data(X_test)
-    X_dev = preprocess_data(X_dev)
+        # Convert the resized images to NumPy arrays
+        X_resized = np.array(X_resized)
 
-    gamma_range = [0.001, 0.01, 0.1, 1.0, 10]
-    C_range = [0.1, 1.0, 2, 5, 10]
+        # Split the data into train, dev, and test sets
+        X_train, X_test, y_train, y_test, X_dev, y_dev = train_test_dev_split(X_resized, y, test_size=split_size, dev_size=split_size)
 
+        # Preprocess the data
+        X_train = preprocess_data(X_train)
+        X_test = preprocess_data(X_test)
+        X_dev = preprocess_data(X_dev)
 
-    # Generate a list of dictionaries representing all combinations
-    param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_range, C_range)]
+        gamma_range = [0.001]
+        C_range = [0.1]
 
-    # Hyperparameter tuning 
-    train_acc, best_hparams, best_model, best_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations)
+        # Generate a list of dictionaries representing all combinations
+        param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_range, C_range)]
 
+        # Hyperparameter tuning
+        train_acc, best_hparams, best_model, best_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations)
 
-    # Model training
-    model = train_model(X_train, y_train, best_hparams, model_type="svm")
+        # Model training
+        model = train_model(X_train, y_train, best_hparams, model_type="svm")
 
-    # Accuracy Evaluation
-    test_acc = predict_and_eval(model, X_test, y_test)
+        # Accuracy Evaluation
+        test_acc = predict_and_eval(model, X_test, y_test)
 
-    # Print all combinations 
-    # print(f'test_size={test_size}, dev_size={dev_size}, train_size={train_size}, train_acc:{train_acc:.2f} dev_acc:{best_accuracy:.2f} test_acc: {test_acc:.2f}')
-    # print(f' Best params:{best_hparams}')
+        # Print performance for the current image size and data split size
+        print(f'Image size: {size[0]}x{size[1]} {split_name}: {split_size:.1f} '
+              f'train_acc: {train_acc:.2f} dev_acc: {best_accuracy:.2f} test_acc: {test_acc:.2f}')
 
-print('The number of total samples in the train dataset:', len(X)*train_size)
-print('The number of total samples in the test dataset:', len(X)*test_size)
-print('The number of total samples in the dev dataset:', len(X)*dev_size)
-
+# Calculate and print the number of total samples
+total_samples = len(X)
+print(f'Total samples: {total_samples}')

@@ -1,58 +1,102 @@
-import itertools
+"""
+================================
+Recognizing hand-written digits
+================================
+
+This example shows how scikit-learn can be used to recognize images of
+hand-written digits, from 0-9.
+
+"""
+
+# Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
+# License: BSD 3 clause
+
+# Import datasets, classifiers and performance metrics
 from sklearn import metrics, svm
-from utils import preprocess_data, split_data, train_model, read_digits, predict_and_eval, train_test_dev_split, tune_hparams
-from skimage.transform import resize
-import numpy as np
+import pandas as pd
+from utils import preprocess_data, read_digits, predict_and_eval, train_test_dev_split, tune_hparams, generate_hyperparameter_combinations
+from joblib import dump, load
+import sys
+import json
+import itertools
 
-# Load the digit dataset
+# 1. Get the dataset
 X, y = read_digits()
+ 
 
-# Define different image sizes
-image_sizes = [(4, 4), (6, 6), (8, 8)]
+# Load parameters from config.json
+with open("config.json", "r") as config_file:
+    config = json.load(config_file)
 
-# Define data split sizes
-data_split_sizes = {
-    'train_size': 0.7,
-    'dev_size': 0.1,
-    'test_size': 0.2
-}
 
-# Loop through image sizes
-for size in image_sizes:
-    for split_name, split_size in data_split_sizes.items():
-        # Resize the images to the specified size
-        X_resized = [resize(image, size) for image in X]
+models = config["models"]
+iter_count = config["iterations"]
+test_sizes = config["test_sizes"]
+dev_sizes = config["dev_sizes"]
 
-        # Convert the resized images to NumPy arrays
-        X_resized = np.array(X_resized)
+# SVM parameters
+svm_params = models["svm"]
+svm_h_params_combinations = generate_hyperparameter_combinations(svm_params)
 
-        # Split the data into train, dev, and test sets
-        X_train, X_test, y_train, y_test, X_dev, y_dev = train_test_dev_split(X_resized, y, test_size=split_size, dev_size=split_size)
+# Decision Tree parameters
+dt_params = models["decision_tree"]
+dt_h_params_combinations = generate_hyperparameter_combinations(dt_params)
 
-        # Preprocess the data
-        X_train = preprocess_data(X_train)
-        X_test = preprocess_data(X_test)
-        X_dev = preprocess_data(X_dev)
+results_df = pd.DataFrame(columns=[
+    "Model Name",
+    "Train Size",
+    "Dev Size",
+    "Test Size",
+    "Train Accuracy",
+    "Dev Accuracy",
+    "Test Accuracy"
+])
 
-        gamma_range = [0.001]
-        C_range = [0.1]
 
-        # Generate a list of dictionaries representing all combinations
-        param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_range, C_range)]
+for i in range(iter_count):
+    print('Iteration:',i)
+    for test_size in test_sizes:
+        for dev_size in dev_sizes:
+            train_size = 1- test_size - dev_size
+            # 3. Data splitting -- to create train and test sets                
+            X_train, X_test, X_dev, y_train, y_test, y_dev = train_test_dev_split(X, y, test_size=test_size, dev_size=dev_size)
+            # 4. Data preprocessing
+            X_train = preprocess_data(X_train)
+            X_test = preprocess_data(X_test)
+            X_dev = preprocess_data(X_dev)
+            # print("test_size={:.2f} dev_size={:.2f} train_size={:.2f}".format(test_size, dev_size, train_size))
+        
+            # Hyperparameter tuning and evaluation for SVM
+            model_svm = 'svm'
+            best_svm_hparams, best_svm_model_path, best_svm_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, 
+                                                                                    svm_h_params_combinations, 
+                                                                                    model_type = model_svm)
+            best_svm_model = load(best_svm_model_path)
+            svm_test_acc = predict_and_eval(best_svm_model, X_test, y_test)
+            svm_train_acc = predict_and_eval(best_svm_model, X_train, y_train)
+            svm_dev_acc = best_svm_accuracy
+            # print("==>SVM - train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}".format(svm_train_acc, svm_dev_acc, svm_test_acc))
 
-        # Hyperparameter tuning
-        train_acc, best_hparams, best_model, best_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations)
+            # Hyperparameter tuning and evaluation for Decision Tree
+            model_tree = 'decision_tree'
+            best_dt_hparams, best_dt_model_path, best_dt_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, 
+                                                                                dt_h_params_combinations, 
+                                                                                model_type=model_tree)
+            best_dt_model = load(best_dt_model_path)
+            dt_test_acc = predict_and_eval(best_dt_model, X_test, y_test)
+            dt_train_acc = predict_and_eval(best_dt_model, X_train, y_train)
+            dt_dev_acc = best_dt_accuracy
 
-        # Model training
-        model = train_model(X_train, y_train, best_hparams, model_type="svm")
+            results_df = pd.concat([results_df, pd.DataFrame({
+                "Model Name": ["SVM", "Tree"],
+                "Train Size": [train_size, train_size],
+                "Dev Size": [dev_size, dev_size],
+                "Test Size": [test_size, test_size],
+                "Train Accuracy": [svm_train_acc, dt_train_acc],
+                "Dev Accuracy": [svm_dev_acc, dt_dev_acc],
+                "Test Accuracy": [svm_test_acc, dt_test_acc]
+            })], ignore_index=True)
 
-        # Accuracy Evaluation
-        test_acc = predict_and_eval(model, X_test, y_test)
-
-        # Print performance for the current image size and data split size
-        print(f'Image size: {size[0]}x{size[1]} {split_name}: {split_size:.1f} '
-              f'train_acc: {train_acc:.2f} dev_acc: {best_accuracy:.2f} test_acc: {test_acc:.2f}')
-
-# Calculate and print the number of total samples
-total_samples = len(X)
-print(f'Total samples: {total_samples}')
+            # print("==>Decision Tree - train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}".format(dt_train_acc, dt_dev_acc, dt_test_acc))
+        
+print(results_df)

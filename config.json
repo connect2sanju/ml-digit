@@ -1,0 +1,16 @@
+{
+  "models": {
+    "svm": {
+      "gamma": [0.001, 0.01],
+      "C": [1, 10]
+    },
+    "decision_tree": {
+      "max_depth": [5, 10],
+      "min_samples_leaf": [1, 2, 4],
+      "criterion": ["gini", "entropy"]      
+    }
+  },
+  "iterations": 2,
+  "test_sizes": [0.1, 0.2, 0.3, 0.45],
+  "dev_sizes": [0.1, 0.2, 0.3, 0.45]
+}

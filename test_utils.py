@@ -1,24 +1,23 @@
-from utils import get_hyperparameter_combinations, train_test_dev_split,read_digits, tune_hparams, preprocess_data
+from utils import generate_hyperparameter_combinations, train_test_dev_split,read_digits, tune_hparams, preprocess_data
 import os
 def test_for_hparam_cominations_count():
     # a test case to check that all possible combinations of paramers are indeed generated
-    gamma_list = [0.001, 0.01, 0.1, 1]
-    C_list = [1, 10, 100, 1000]
-    h_params={}
-    h_params['gamma'] = gamma_list
-    h_params['C'] = C_list
-    h_params_combinations = get_hyperparameter_combinations(h_params)
+    svm_param = {
+      "gamma": [0.001, 0.01],
+      "C": [1, 10]
+    }
+    h_params_combinations = generate_hyperparameter_combinations(svm_param)
     
-    assert len(h_params_combinations) == len(gamma_list) * len(C_list)
+    assert len(h_params_combinations) == len(svm_param["gamma"]) * len(svm_param["C"])
 
 def create_dummy_hyperparameter():
-    gamma_list = [0.001, 0.01]
-    C_list = [1]
-    h_params={}
-    h_params['gamma'] = gamma_list
-    h_params['C'] = C_list
-    h_params_combinations = get_hyperparameter_combinations(h_params)
+    svm_param = {
+      "gamma": [0.001, 0.01],
+      "C": [1]
+    }
+    h_params_combinations = generate_hyperparameter_combinations(svm_param)
     return h_params_combinations
+
 def create_dummy_data():
     X, y = read_digits()
     
@@ -31,6 +30,7 @@ def create_dummy_data():
     X_dev = preprocess_data(X_dev)
 
     return X_train, y_train, X_dev, y_dev
+
 def test_for_hparam_cominations_values():    
     h_params_combinations = create_dummy_hyperparameter()
     

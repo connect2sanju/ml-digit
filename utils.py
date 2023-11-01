@@ -2,21 +2,37 @@ from sklearn.model_selection import train_test_split
 from sklearn import svm, datasets, metrics
 from sklearn import tree
 from joblib import dump, load
-# we will put all utils here
+import json 
+import itertools
 
-def get_combinations(param_name, param_values, base_combinations):    
-    new_combinations = []
-    for value in param_values:
-        for combination in base_combinations:
-            combination[param_name] = value
-            new_combinations.append(combination.copy())    
-    return new_combinations
+def generate_hyperparameter_combinations(model_params):
+    hyperparameter_combinations = []
 
-def get_hyperparameter_combinations(dict_of_param_lists):    
-    base_combinations = [{}]
-    for param_name, param_values in dict_of_param_lists.items():
-        base_combinations = get_combinations(param_name, param_values, base_combinations)
-    return base_combinations
+    model_combinations = []
+    for param_name, param_values in model_params.items():
+        model_combinations.append([(param_name, value) for value in param_values])
+
+    model_hyperparameter_combinations = list(itertools.product(*model_combinations))
+
+    for model_combination in model_hyperparameter_combinations:
+        hyperparameters = {param_name: value for param_name, value in model_combination}
+        hyperparameter_combinations.append(hyperparameters)
+
+    return hyperparameter_combinations
+
+# def get_combinations(param_name, param_values, base_combinations):    
+#     new_combinations = []
+#     for value in param_values:
+#         for combination in base_combinations:
+#             combination[param_name] = value
+#             new_combinations.append(combination.copy())    
+#     return new_combinations
+
+# def get_hyperparameter_combinations(dict_of_param_lists):    
+#     base_combinations = [{}]
+#     for param_name, param_values in dict_of_param_lists.items():
+#         base_combinations = get_combinations(param_name, param_values, base_combinations)
+#     return base_combinations
 
 def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_type="svm"):
     best_accuracy = -1

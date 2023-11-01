@@ -14,35 +14,33 @@ hand-written digits, from 0-9.
 # Import datasets, classifiers and performance metrics
 from sklearn import metrics, svm
 import pandas as pd
-from utils import preprocess_data, split_data, train_model, read_digits, predict_and_eval, train_test_dev_split, get_hyperparameter_combinations, tune_hparams
+from utils import preprocess_data, read_digits, predict_and_eval, train_test_dev_split, tune_hparams, generate_hyperparameter_combinations
 from joblib import dump, load
 import sys
+import json
+import itertools
+
 # 1. Get the dataset
 X, y = read_digits()
+ 
 
-iter_count = int(sys.argv[1])
-test_sizes = sys.argv[2]
-dev_sizes = sys.argv[3]
-gamma_list = sys.argv[4]
-C_list = sys.argv[5]
-max_depth_list = sys.argv[6]
-
-# 2. Hyperparameter combinations
-# 2.1. SVM
-# gamma_list = [0.001, 0.01]
-# C_list = [1, 10]
-svm_h_params={}
-svm_h_params['gamma'] = gamma_list
-svm_h_params['C'] = C_list
-svm_h_params_combinations = get_hyperparameter_combinations(svm_h_params)
+# Load parameters from config.json
+with open("config.json", "r") as config_file:
+    config = json.load(config_file)
 
 
-# 2.2. Decision Tree
-# max_depth_list = [5, 10]
+models = config["models"]
+iter_count = config["iterations"]
+test_sizes = config["test_sizes"]
+dev_sizes = config["dev_sizes"]
 
-dt_h_params={}
-dt_h_params['max_depth'] = max_depth_list
-dt_h_params_combinations = get_hyperparameter_combinations(dt_h_params)
+# SVM parameters
+svm_params = models["svm"]
+svm_h_params_combinations = generate_hyperparameter_combinations(svm_params)
+
+# Decision Tree parameters
+dt_params = models["decision_tree"]
+dt_h_params_combinations = generate_hyperparameter_combinations(dt_params)
 
 results_df = pd.DataFrame(columns=[
     "Model Name",
@@ -53,10 +51,6 @@ results_df = pd.DataFrame(columns=[
     "Dev Accuracy",
     "Test Accuracy"
 ])
-
-# iter_count = 5
-# test_sizes =  [0.1, 0.2, 0.3, 0.45]
-# dev_sizes  =  [0.1, 0.2, 0.3, 0.45]
 
 
 for i in range(iter_count):

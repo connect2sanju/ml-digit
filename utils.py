@@ -20,19 +20,6 @@ def generate_hyperparameter_combinations(model_params):
 
     return hyperparameter_combinations
 
-# def get_combinations(param_name, param_values, base_combinations):    
-#     new_combinations = []
-#     for value in param_values:
-#         for combination in base_combinations:
-#             combination[param_name] = value
-#             new_combinations.append(combination.copy())    
-#     return new_combinations
-
-# def get_hyperparameter_combinations(dict_of_param_lists):    
-#     base_combinations = [{}]
-#     for param_name, param_values in dict_of_param_lists.items():
-#         base_combinations = get_combinations(param_name, param_values, base_combinations)
-#     return base_combinations
 
 def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_type="svm"):
     best_accuracy = -1

@@ -29,10 +29,10 @@ with open("config.json", "r") as config_file:
     config = json.load(config_file)
 
 
-models = config["models"]
 iter_count = config["iterations"]
 test_sizes = config["test_sizes"]
 dev_sizes = config["dev_sizes"]
+models = config["models"]
 
 # SVM parameters
 svm_params = models["svm"]

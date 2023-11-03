@@ -2,7 +2,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import svm, datasets, metrics
 from sklearn import tree
 from joblib import dump, load
-import json 
+import os
 import itertools
 
 def generate_hyperparameter_combinations(model_params):
@@ -33,13 +33,11 @@ def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_ty
             best_accuracy = cur_accuracy
             best_hparams = h_params
             best_model_path = "./models/{}_".format(model_type) +"_".join(["{}:{}".format(k,v) for k,v in h_params.items()]) + ".joblib"
+            # print(best_model_path)
             best_model = model
 
     # save the best_model    
     dump(best_model, best_model_path) 
-
-    # print("Model save at {}".format(best_model_path))
-
     return best_hparams, best_model_path, best_accuracy 
 
 

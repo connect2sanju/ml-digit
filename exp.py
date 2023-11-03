@@ -54,7 +54,7 @@ results_df = pd.DataFrame(columns=[
 
 
 for i in range(iter_count):
-    print('Iteration:',i)
+    # print('Iteration:',i)
     for test_size in test_sizes:
         for dev_size in dev_sizes:
             train_size = 1- test_size - dev_size
@@ -64,7 +64,6 @@ for i in range(iter_count):
             X_train = preprocess_data(X_train)
             X_test = preprocess_data(X_test)
             X_dev = preprocess_data(X_dev)
-            # print("test_size={:.2f} dev_size={:.2f} train_size={:.2f}".format(test_size, dev_size, train_size))
         
             # Hyperparameter tuning and evaluation for SVM
             model_svm = 'svm'
@@ -75,7 +74,6 @@ for i in range(iter_count):
             svm_test_acc = predict_and_eval(best_svm_model, X_test, y_test)
             svm_train_acc = predict_and_eval(best_svm_model, X_train, y_train)
             svm_dev_acc = best_svm_accuracy
-            # print("==>SVM - train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}".format(svm_train_acc, svm_dev_acc, svm_test_acc))
 
             # Hyperparameter tuning and evaluation for Decision Tree
             model_tree = 'decision_tree'
@@ -96,7 +94,5 @@ for i in range(iter_count):
                 "Dev Accuracy": [svm_dev_acc, dt_dev_acc],
                 "Test Accuracy": [svm_test_acc, dt_test_acc]
             })], ignore_index=True)
-
-            # print("==>Decision Tree - train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}".format(dt_train_acc, dt_dev_acc, dt_test_acc))
-        
-print(results_df)
+      
+print(results_df.head(10))

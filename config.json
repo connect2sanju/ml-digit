@@ -10,7 +10,7 @@
       "criterion": ["gini", "entropy"]      
     }
   },
-  "iterations": 2,
+  "iterations": 5,
   "test_sizes": [0.1, 0.2],
   "dev_sizes": [0.1, 0.2]
 }

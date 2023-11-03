@@ -75,7 +75,6 @@ for i in range(iter_count):
             svm_test_acc = predict_and_eval(best_svm_model, X_test, y_test)
             svm_train_acc = predict_and_eval(best_svm_model, X_train, y_train)
             svm_dev_acc = best_svm_accuracy
-            # print("==>SVM - train_acc={:.2f} dev_acc={:.2f} test_acc={:.2f}".format(svm_train_acc, svm_dev_acc, svm_test_acc))
 
             # Hyperparameter tuning and evaluation for Decision Tree
             model_tree = 'decision_tree'

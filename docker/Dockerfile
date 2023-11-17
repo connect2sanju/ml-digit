@@ -11,7 +11,7 @@ RUN pip install -r /digits/requirements.txt
 WORKDIR /digits
 
 # Set the FLASK_APP environment variable
-ENV FLASK_APP api/app.py
+ENV FLASK_APP api/new_app.py
 
 EXPOSE 5000
 

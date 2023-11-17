@@ -10,6 +10,11 @@ RUN pip install -r /digits/requirements.txt
 # Set the working directory in the container
 WORKDIR /digits
 
-# Run exp.py when the container launches
-CMD ["python", "exp.py"]
+# Set the FLASK_APP environment variable
+ENV FLASK_APP api/hello-world.py
+
+EXPOSE 5000
+
+# Run app.py when the container launches
+CMD ["flask", "run", "--host=0.0.0.0"]
 

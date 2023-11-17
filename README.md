@@ -1,9 +1,9 @@
-#Flask execute 
-export FLASK_APP=api/hello-world.py
+## Flask execute 
+export FLASK_APP=api/app.py
 flask run 
 
-#Docker setup
-docker build -t flask:v1 -f docker/Dockerfile .
+## Docker setup
+docker build -t assignment5:v1 -f docker/Dockerfile .
 docker run -p 5000:5000 flask:v1
 
 
@@ -20,4 +20,4 @@ az login --use-device
 az acr build --registry sanjibmlops23 --image webimage .
 
 ## Assignment-5
-az acr build --image flask:v1 --registry sanjibmlops23 --file ./docker/Dockerfile .
+az acr build --image assignment5:v1 --registry sanjibmlops23 --file ./docker/Dockerfile .

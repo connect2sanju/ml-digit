@@ -20,4 +20,4 @@ az login --use-device
 az acr build --registry sanjibmlops23 --image webimage .
 
 ## Assignment-5
-az acr build --image assignment5:v3 --registry sanjibmlops23 --file ./docker/Dockerfile .
+az acr build --image assignment5:v4 --registry sanjibmlops23 --file ./docker/Dockerfile .

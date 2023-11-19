@@ -1,11 +1,12 @@
 import joblib
-from flask import Flask, request, jsonify
-from ..utils import preprocess_data
-import os
-import numpy as np
 import json
+import os
+# print('==>',os.getcwd())
+from flask import Flask, request, jsonify
+from utils import preprocess_data
+import numpy as np
 
-from markupsafe import escape
+# from markupsafe import escape
 
 app = Flask(__name__)
 
@@ -28,7 +29,8 @@ def predict_digit():
     if not model_files:
         raise FileNotFoundError("No model files found in the 'models/' folder")
 
-    first_model_file = model_files[0]
+    first_model_file = model_files[1] 
+    # first_model_file = '/Users/sanjib/Desktop/IITJ/Classes/Sem-2/ML-Ops/Labs/digit-classifications/models/decision_tree_max_depth:10.joblib'
     first_model_path = f"models/{first_model_file}"
     best_model = joblib.load(first_model_path)
 
@@ -39,4 +41,5 @@ def predict_digit():
         "predicted_digit": int(predicted_digit)
     }
 
-    return jsonify(response)
+    # return jsonify(response)
+    return str(predicted_digit)

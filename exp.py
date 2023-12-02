@@ -109,6 +109,3 @@ lr_results_df.reset_index(drop=True, inplace=True)
 # Display the new DataFrame
 print(lr_results_df)
                 
-
-# Display the results dataframe
-# print(results_df)

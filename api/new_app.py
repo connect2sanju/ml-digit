@@ -13,8 +13,26 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, World!'
 
-@app.route('/predict', methods=['POST'])
-def predict_digit():
+# @app.route('/predict/<model_type>', methods=['POST'])
+# def load_model(model_type):
+
+#     supported_model_types = ['svm', 'tree', 'lr']
+#     return_msg = { "model_type" : f"You have passed {model_type}"}
+
+#     if model_type == 'svm':
+#         return return_msg
+    
+#     elif model_type == 'tree':
+#         return return_msg
+    
+#     elif model_type == 'lr':
+#         return return_msg
+#     else:
+#         return { "model_type" : f"{model_type} model not supported. Supported models {supported_model_types}"}
+    
+    
+@app.route('/predict/<model_type>', methods=['POST'])
+def predict_digit(model_type):
     data = request.get_json()
 
     # Check if 'images' key is present in the JSON data
@@ -39,18 +57,21 @@ def predict_digit():
         # Dynamically load the first model in the 'models/' folder
         model_files = os.listdir('models/')
         model_files = [file for file in model_files if file.endswith('.joblib')]
+        supported_model_types = ['svm', 'tree', 'lr']
+        
 
-        if not model_files:
-            raise FileNotFoundError("No model files found in the 'models/' folder")
+        if model_type == 'svm':
+            return_msg = { "model_type" : f"You have passed {model_type}"}
+            # return return_msg
 
-        first_model_file = model_files[0]
-        first_model_path = f"models/{first_model_file}"
-        best_model = joblib.load(first_model_path)
+            first_model_file = model_files[3]
+            first_model_path = f"models/{first_model_file}"
+            best_model = joblib.load(first_model_path)
 
-        # Use the loaded model for prediction
-        predicted_digit = best_model.predict(preprocessed_image.reshape(1, -1))[0]
+            # Use the loaded model for prediction
+            predicted_digit = best_model.predict(preprocessed_image.reshape(1, -1))[0]
 
-        predictions.append({"image": i, "predicted_digit": int(predicted_digit)})
+            predictions.append({"image": i, "predicted_digit": int(predicted_digit)})
 
     response = {
         "predictions": predictions

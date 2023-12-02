@@ -23,5 +23,6 @@ jobs:
         run:  pip3 install --no-cache-dir -r requirements.txt
       - name: Run test cases
         run:
-          # python exp.py
-          pytest
+          feature/final_exam
+          python exp.py
+          # pytest

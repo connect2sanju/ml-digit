@@ -76,7 +76,7 @@ def train_model(x, y, model_params, model_type):
     return model
 
 
-def train_test_dev_split(X, y, test_size, dev_size):
+def train_test_dev_split(X, y, test_size, dev_size, random_state=42):
     X_train_dev, X_test, Y_train_Dev, y_test =  split_data(X, y, test_size=test_size, random_state=1)
     # print("train+dev = {} test = {}".format(len(Y_train_Dev),len(y_test)))
     

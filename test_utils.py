@@ -11,7 +11,7 @@ def test_loaded_model_is_logistic_regression():
     roll_number = "m22aie234"
     solver_name =  "lbfgs"
     model_path = f"./models/{roll_number}_lr_{solver_name}.joblib"
-
+    print('==>', model_path)
     # Load the model
     loaded_model = load(model_path)
 

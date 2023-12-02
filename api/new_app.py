@@ -64,7 +64,7 @@ def predict_digit(model_type):
             return_msg = { "model_type" : f"You have passed {model_type}"}
             # return return_msg
 
-            first_model_file = model_files[0]
+            first_model_file = model_files[3]
             first_model_path = f"models/{first_model_file}"
             best_model = joblib.load(first_model_path)
 

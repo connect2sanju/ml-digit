@@ -40,7 +40,7 @@ def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_ty
             best_accuracy = cur_accuracy
             best_hparams = h_params
             solver_name = best_hparams['solver'] if 'solver' in best_hparams else 'default'
-            best_model_path = f"{os.getcwd()}/models/m22aie234_lr_{solver_name}.joblib"
+            best_model_path = f"./models/m22aie234_lr_{solver_name}.joblib"
             best_model = model
 
     # save the best_model

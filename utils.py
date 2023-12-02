@@ -23,28 +23,6 @@ def generate_hyperparameter_combinations(model_params):
     return hyperparameter_combinations
 
 
-# def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_type="svm"):
-#     best_accuracy = -1
-#     best_model_path = ""
-#     for h_params in h_params_combinations:
-#         # print('hparams:',h_params)
-#         # 5. Model training
-#         model = train_model(X_train, y_train, h_params, model_type=model_type)
-#         # Predict the value of the digit on the test subset        
-#         cur_accuracy = predict_and_eval(model, X_dev, y_dev)
-#         if cur_accuracy > best_accuracy:
-#             best_accuracy = cur_accuracy
-#             best_hparams = h_params
-#             # best_model_path = "./models/{}_".format(model_type) +"_".join(["{}:{}".format(k,v) for k,v in h_params.items()]) + ".joblib"
-#             solver_name = h_params['solver'] if 'solver' in h_params else 'default'
-#             best_model_path = f"./models/m22aie234_lr_{solver_name}.joblib"
-#             # print(best_model_path)
-#             best_model = model
-
-#     # save the best_model    
-#     dump(best_model, best_model_path) 
-#     return best_hparams, best_model_path, best_accuracy 
-
 def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_type="svm", solver=None):
     best_accuracy = -1
     best_model_path = ""
@@ -62,7 +40,7 @@ def tune_hparams(X_train, y_train, X_dev, y_dev, h_params_combinations, model_ty
             best_accuracy = cur_accuracy
             best_hparams = h_params
             solver_name = best_hparams['solver'] if 'solver' in best_hparams else 'default'
-            best_model_path = f"./models/m22aie234_lr_{solver_name}.joblib"
+            best_model_path = f"{os.getcwd()}+./models/m22aie234_lr_{solver_name}.joblib"
             best_model = model
 
     # save the best_model

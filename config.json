@@ -8,9 +8,13 @@
       "max_depth": [5],
       "min_samples_leaf": [1],
       "criterion": ["gini"]      
+    },
+    "logistic_regression": {
+      "solver": ["liblinear", "lbfgs", "newton-cg"],
+      "C": [1.0]
     }
   },
-  "iterations": 5,
+  "iterations": 1,
   "test_sizes": [0.1, 0.2],
   "dev_sizes": [0.1, 0.2]
 }
